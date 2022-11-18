@@ -82,6 +82,9 @@
 		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
 			The [member polygon] shape follows the path and its rotations around the path axis.
 		</constant>
+		<constant name="PATH_ROTATION_PATH_FOLLOW_TILT" value="3" enum="PathRotation">
+			The [member polygon] shape follows the path and its rotations around the path axis including tilt.
+		</constant>
 		<constant name="PATH_INTERVAL_DISTANCE" value="0" enum="PathIntervalType">
 			When [member mode] is set to [constant MODE_PATH], [member path_interval] will determine the distance, in meters, each interval of the path will extrude.
 		</constant>

@@ -1869,7 +1869,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0, false);
+					break;
+				case PATH_ROTATION_PATH_FOLLOW_TILT:
+					current_up = curve->sample_baked_up_vector(0, true);
 					break;
 			}
 
@@ -1956,7 +1959,10 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset, false);
+							break;
+						case PATH_ROTATION_PATH_FOLLOW_TILT:
+							current_up = curve->sample_baked_up_vector(current_offset, true);
 							break;
 					}
 
@@ -2156,7 +2162,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_interval_type", PROPERTY_HINT_ENUM, "Distance,Subdivide"), "set_path_interval_type", "get_path_interval_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_simplify_angle", PROPERTY_HINT_RANGE, "0.0,180.0,0.1,exp"), "set_path_simplify_angle", "get_path_simplify_angle");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow,PathFollowTilt"), "set_path_rotation", "get_path_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,suffix:m"), "set_path_u_distance", "get_path_u_distance");
@@ -2171,6 +2177,7 @@ void CSGPolygon3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PATH_ROTATION_POLYGON);
 	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH);
 	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH_FOLLOW);
+	BIND_ENUM_CONSTANT(PATH_ROTATION_PATH_FOLLOW_TILT);
 
 	BIND_ENUM_CONSTANT(PATH_INTERVAL_DISTANCE);
 	BIND_ENUM_CONSTANT(PATH_INTERVAL_SUBDIVIDE);
