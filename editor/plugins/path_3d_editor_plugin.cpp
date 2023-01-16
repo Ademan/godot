@@ -38,6 +38,57 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/resources/curve.h"
+#include "scene/resources/primitive_meshes.h"
+
+static Vector3 _get_curve_point_up_vector(const Ref<Curve3D> & c, int index, bool tilt) {
+	// TODO: Get offset in a cleaner, more direct way.
+	Vector3 pos = c->get_point_position(index);
+	real_t t = c->get_closest_offset(pos);
+	return c->sample_baked_up_vector(t, tilt);
+}
+
+static Vector3 _get_curve_point_tangent(const Ref<Curve3D> & c, int index) {
+	Vector3 pos = c->get_point_position(index);
+	real_t t = c->get_closest_offset(pos);
+
+	real_t length = c->get_baked_length();
+
+	real_t dt = c->get_bake_interval();
+
+	// Enforce sanity. get_closest_offset() is returning t > length.
+	t = CLAMP(t, 0, length);
+
+	// Accounting for missing points at the beginning and end of the curve, for points
+	// prev, pos, next: average prev->pos and pos->next to estimate the instantaneous tangent at
+	// point pos.
+
+	real_t t_prev = t - dt;
+	real_t t_next = t + dt;
+
+	Vector3 tangent = Vector3(0, 0, 0);
+
+	int n = 0;
+
+	if (t_next <= length) {
+		tangent += c->sample_baked(t_next) - pos;
+		n++;
+	}
+
+	if (t_prev >= 0) {
+		tangent -= c->sample_baked(t_prev) - pos;
+		n++;
+	}
+
+	if (n > 0) {
+		tangent /= n;
+	} else {
+		tangent = Vector3(1, 0, 0);
+	}
+
+	tangent.normalize();
+
+	return tangent;
+}
 
 static bool _is_in_handle(int p_id, int p_num_points) {
 	int t = (p_id + 1) % 2;
@@ -266,6 +317,37 @@ void Path3DGizmo::redraw() {
 		v3p.clear();
 		Vector<Vector3> handle_points;
 		Vector<Vector3> sec_handle_points;
+		Vector<Ref<Mesh>> rings;
+
+		// Put the tilt related handles first to massively simplify handle identification in
+		// {get,set,commit}_handle().
+		if (c->is_up_vector_enabled())
+		{
+			for (int i = 0; i < c->get_point_count(); i++) {
+				Vector3 p = c->get_point_position(i);
+				Vector3 up = _get_curve_point_up_vector(c, i, true);
+				Vector3 tangent = _get_curve_point_tangent(c, i);
+
+				Transform3D transform;
+				transform.origin = p;
+				// TorusMesh "up" is along +Y so we use the curve "up" as forward instead.
+				transform.basis = Basis::looking_at(up, tangent);
+
+				v3p.push_back(p);
+				v3p.push_back(p + up);
+
+				sec_handle_points.push_back(p + up);
+
+				Ref<TorusMesh> mesh = memnew(TorusMesh);
+				mesh->set_inner_radius(1.0f);
+				mesh->set_outer_radius(1.02f);
+				mesh->set_rings(64);
+				mesh->set_ring_segments(3);
+
+				//rings.push_back(mesh);
+				add_mesh(mesh, path_thin_material, transform);
+			}
+		}
 
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
