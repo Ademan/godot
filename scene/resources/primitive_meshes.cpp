@@ -1981,7 +1981,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 	tangents.push_back(m_z);            \
 	tangents.push_back(m_d);
 
-	ERR_FAIL_COND_MSG(inner_radius == outer_radius, "Inner radius and outer radius cannot be the same.");
+	//ERR_FAIL_COND_MSG(inner_radius == outer_radius, "Inner radius and outer radius cannot be the same.");
 
 	float min_radius = inner_radius;
 	float max_radius = outer_radius;
